@@ -5,7 +5,6 @@ src/**
 .github/**
 node_modules/**
 out/**
-!out/src/extension.js
 test/**
 test-workspace/**
 .vscode-test/**

@@ -44,7 +44,7 @@
     "workspaceContains:**/foundry.toml",
     "workspaceContains:**/hardhat.config.*"
   ],
-  "main": "./out/src/extension.js",
+  "main": "./extension.js",
   "contributes": {
     "languages": [
       {

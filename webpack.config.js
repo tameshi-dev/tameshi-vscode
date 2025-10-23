@@ -5,7 +5,7 @@ module.exports = {
     mode: 'production',
     entry: './src/extension.ts',
     output: {
-        path: path.resolve(__dirname, 'out', 'src'),
+        path: path.resolve(__dirname),
         filename: 'extension.js',
         libraryTarget: 'commonjs2'
     },
