@@ -1,9 +1,9 @@
 {
   "name": "tameshi-vscode",
   "displayName": "Tameshi Security Scanner",
-  "description": "VS Code extension for Tameshi LSP server - Solidity/Yul/EVM security analysis",
+  "description": "VS Code extension for Tameshi LSP server - Solidity security analysis",
   "version": "0.1.8",
-  "publisher": "tameshi",
+  "publisher": "GianlucaBrigandi",
   "repository": {
     "type": "git",
     "url": "https://github.com/tameshi-dev/tameshi-vscode"
@@ -13,8 +13,13 @@
     "url": "https://github.com/tameshi-dev/tameshi-vscode/issues"
   },
   "homepage": "https://tameshi.dev",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.85.0"
+  },
+  "galleryBanner": {
+    "color": "#B91C1C",
+    "theme": "dark"
   },
   "categories": [
     "Linters",
@@ -22,15 +27,12 @@
   ],
   "keywords": [
     "solidity",
-    "yul",
-    "evm",
     "security",
     "analysis",
     "tameshi"
   ],
   "activationEvents": [
     "onLanguage:solidity",
-    "onLanguage:yul",
     "onCommand:tameshi.scanWorkspace.client",
     "onCommand:tameshi.scanFile.client",
     "onCommand:tameshi.llmScanFile",
@@ -53,16 +55,6 @@
         ],
         "extensions": [
           ".sol"
-        ]
-      },
-      {
-        "id": "yul",
-        "aliases": [
-          "Yul",
-          "yul"
-        ],
-        "extensions": [
-          ".yul"
         ]
       }
     ],
@@ -201,8 +193,7 @@
             "type": "string"
           },
           "default": [
-            "**/*.sol",
-            "**/*.yul"
+            "**/*.sol"
           ],
           "description": "Glob patterns for files to include in scans"
         },
@@ -584,7 +575,7 @@
       ],
       "editor/context": [
         {
-          "when": "resourceExtname == .sol || resourceExtname == .yul",
+          "when": "resourceExtname == .sol",
           "command": "tameshi.scanFile.client",
           "group": "tameshi@1"
         }

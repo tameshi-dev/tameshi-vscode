@@ -8,7 +8,7 @@ import { registerCommands } from './commands/index';
 import { EditorDecorationManager } from './editor/decorationManager';
 import { ScanScheduler } from './scanning/scanScheduler';
 import { ChangeTracker } from './scanning/changeTracker';
-import { getLogger, LogCategory } from './utils/logger';
+import { Logger, getLogger, LogCategory } from './utils/logger';
 
 let client: LanguageClient | undefined;
 let lspClientInstance: LSPClient | undefined;
@@ -29,6 +29,8 @@ export function getScanSchedulerInstance(): ScanScheduler | undefined {
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     outputChannel = vscode.window.createOutputChannel('Tameshi');
+    Logger.initialize(outputChannel);
+
     outputChannel.appendLine('=== Tameshi Extension Activating ===');
     outputChannel.appendLine(`Time: ${new Date().toISOString()}`);
     outputChannel.appendLine(`Extension path: ${context.extensionPath}`);

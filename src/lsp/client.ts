@@ -9,6 +9,8 @@ import {
 import { ConfigManager } from '../config';
 import { FindingsProvider } from '../views/findingsView';
 import { FindingDetailsService } from '../services/findingDetailsService';
+import { BinaryFinder } from '../services/binaryFinder';
+import { Downloader } from '../services/downloader';
 import { ScanProgressParams, FindingsUpdatedParams } from './protocol';
 
 export class LSPClient {
@@ -19,6 +21,8 @@ export class LSPClient {
     private findingsProvider: FindingsProvider;
     private refreshTimeout: NodeJS.Timeout | undefined;
     private detailsService: FindingDetailsService;
+    private binaryFinder: BinaryFinder;
+    private downloader: Downloader;
 
     constructor(
         context: vscode.ExtensionContext,
@@ -30,6 +34,8 @@ export class LSPClient {
         this.outputChannel = outputChannel;
         this.statusBarItem = statusBarItem;
         this.findingsProvider = findingsProvider;
+        this.binaryFinder = new BinaryFinder(context);
+        this.downloader = new Downloader(context);
 
         const config = ConfigManager.getConfiguration();
         const cacheTimeout = config.details?.cacheTimeout || 600000;
@@ -100,11 +106,10 @@ export class LSPClient {
 
         const clientOptions: LanguageClientOptions = {
             documentSelector: [
-                { scheme: 'file', language: 'solidity' },
-                { scheme: 'file', language: 'yul' }
+                { scheme: 'file', language: 'solidity' }
             ],
             synchronize: {
-                fileEvents: vscode.workspace.createFileSystemWatcher('{**/*.sol,**/*.yul}')
+                fileEvents: vscode.workspace.createFileSystemWatcher('**/*.sol')
             },
             outputChannel: this.outputChannel,
             initializationOptions: initOptions,
@@ -211,27 +216,36 @@ export class LSPClient {
     }
 
     private async getServerPath(): Promise<string | undefined> {
-        const config = ConfigManager.getConfiguration();
-        
-        if (config.server.path) {
-            this.outputChannel.appendLine(`Using configured server path: ${config.server.path}`);
-            return config.server.path;
+        this.outputChannel.appendLine('Looking for Tameshi LSP server binary...');
+        const location = await this.binaryFinder.find();
+
+        if (location) {
+            this.outputChannel.appendLine(`Found binary from ${location.source}: ${location.path}`);
+            return location.path;
         }
 
-        const pathEnv = process.env.PATH || '';
-        const pathDirs = pathEnv.split(path.delimiter);
-        
-        for (const dir of pathDirs) {
-            const serverPath = path.join(dir, process.platform === 'win32' ? 'tameshi-lsp.exe' : 'tameshi-lsp');
-            try {
-                await vscode.workspace.fs.stat(vscode.Uri.file(serverPath));
-                this.outputChannel.appendLine(`Found server in PATH: ${serverPath}`);
-                return serverPath;
-            } catch {
+        this.outputChannel.appendLine('No binary found, prompting user...');
+
+        const action = await vscode.window.showInformationMessage(
+            'Tameshi LSP server not found. Would you like to download it?',
+            'Download',
+            'Cancel'
+        );
+
+        this.outputChannel.appendLine(`User selected: ${action || 'Cancel'}`);
+
+        if (action === 'Download') {
+            this.outputChannel.appendLine('Starting download...');
+            const downloadedPath = await this.downloader.downloadLatestBinary();
+            if (downloadedPath) {
+                this.outputChannel.appendLine(`Downloaded to: ${downloadedPath}`);
+                return downloadedPath;
+            } else {
+                this.outputChannel.appendLine('Download failed or was cancelled');
             }
         }
 
-        this.outputChannel.appendLine('Server not found in PATH');
+        this.outputChannel.appendLine('Server binary not found and download cancelled or failed');
         return undefined;
     }
 

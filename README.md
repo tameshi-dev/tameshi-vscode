@@ -1,35 +1,43 @@
-# Tameshi Security Scanner (Preview)
+# Tameshi Security Scanner
 
 [![Tests](https://github.com/tameshi-dev/tameshi-vscode/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/tameshi-dev/tameshi-vscode/actions/workflows/test.yml)
 [![Latest Release](https://img.shields.io/github/release/tameshi-dev/tameshi-vscode.svg)](https://github.com/tameshi-dev/tameshi-vscode/releases/latest)
 ![Preview](https://img.shields.io/badge/Status-Preview-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Comprehensive security analysis for Solidity, Yul, and EVM smart contracts with multi-scanner vulnerability detection and LLM-powered analysis.
+Comprehensive security analysis for Solidity smart contracts with multi-scanner vulnerability detection and LLM-powered analysis.
 
 ## Install
 
 ### From Marketplace
+
 Install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=tameshi.tameshi-vscode) or search for "Tameshi Security Scanner" in VS Code Extensions.
 
 ### From VSIX
+
 ```bash
-code --install-extension tameshi-vscode-0.1.8.vsix
+code --install-extension tameshi-vscode-0.1.0.vsix
 ```
 
-### First Run Setup
-On first activation, the extension connects to the Tameshi LSP server for security analysis. Ensure you have the Tameshi LSP server installed on your system.
+### LSP Server Setup
+
+The extension requires the Tameshi LSP server for security analysis. **The LSP server will be downloaded automatically** when you first activate the extension.
+
+If automatic download fails or you prefer manual setup:
+
+1. Download the binary for your platform from [TameshiLSP releases](https://github.com/tameshi-dev/TameshiLSP/releases)
+2. Make it executable: `chmod +x tameshi-lsp` (macOS/Linux)
+3. Add to PATH or configure in settings: `tameshi.server.path`
 
 **Supported Platforms:**
+
 - macOS (Intel & Apple Silicon)
 - Linux (x64 & ARM64)
-- Windows (x64)
-
-You can configure the server path in settings: `tameshi.server.path`
+- Windows (x64 & ARM64)
 
 ## Usage
 
-1. Open a Solidity or Yul project
+1. Open a Solidity project
 2. Right-click any file or folder → Select "Tameshi" commands
 3. Security findings are displayed in the Tameshi sidebar
 4. Click on findings to view detailed analysis and suggested fixes
@@ -52,6 +60,7 @@ You can configure the server path in settings: `tameshi.server.path`
 ### Multi-Scanner Vulnerability Detection
 
 Tameshi combines multiple security scanners to provide comprehensive vulnerability detection:
+
 - Pattern-based static analysis
 - Data flow analysis
 - Control flow analysis
@@ -60,6 +69,7 @@ Tameshi combines multiple security scanners to provide comprehensive vulnerabili
 ### Smart Finding Correlation
 
 Automatically correlates findings across different scanners to:
+
 - Reduce false positives
 - Provide confidence scores
 - Show relationships between vulnerabilities
@@ -68,6 +78,7 @@ Automatically correlates findings across different scanners to:
 ### AI-Powered Analysis
 
 Optional LLM integration provides:
+
 - Deep semantic analysis
 - Context-aware vulnerability detection
 - Automatic severity assessment
@@ -91,6 +102,7 @@ Optional LLM integration provides:
 ### Vulnerability Triage View
 
 Dedicated sidebar view with:
+
 - Findings grouped by severity, file, or rule
 - Detailed vulnerability information
 - One-click navigation to affected code
@@ -118,7 +130,7 @@ The extension can be configured through VS Code settings:
 - `tameshi.scan.onWorkspaceOpen.staleThresholdHours` - Hours before workspace scan is considered stale, 1-72 hours (default: `8`)
 - `tameshi.scan.git.enabled` - Enable automatic scanning on Git events (pull, checkout, merge) (default: `false`)
 - `tameshi.scan.git.scanChangedOnly` - Only scan files changed by Git operation vs full workspace scan (default: `true`)
-- `tameshi.scan.include` - File patterns to include (default: `["**/*.sol", "**/*.yul"]`)
+- `tameshi.scan.include` - File patterns to include (default: `["**/*.sol"]`)
 - `tameshi.scan.exclude` - File patterns to exclude (default: `["**/node_modules/**", "**/lib/**", "**/out/**"]`)
 
 ### AI/LLM Configuration
@@ -184,6 +196,7 @@ The extension can be configured through VS Code settings:
 ## Security Notice
 
 This extension connects to the Tameshi LSP server for security analysis. The server:
+
 - Runs locally on your machine
 - Analyzes code without sending it to external servers (unless LLM features are enabled)
 - LLM features require API keys and send code snippets to the configured provider
@@ -202,13 +215,13 @@ When using LLM features, code snippets are sent to your configured provider (Ope
 
 **Extension not activating?**
 
-- Ensure you have `.sol` or `.yul` files in your workspace
+- Ensure you have `.sol` files in your workspace
 - Check Output panel → "Tameshi" for errors
 - Verify LSP server is installed and accessible
 
 **No findings displayed?**
 
-- Verify Solidity/Yul syntax is valid
+- Verify Solidity syntax is valid
 - Check the Tameshi sidebar in the Activity Bar
 - Try manually running "Tameshi: Scan Workspace"
 

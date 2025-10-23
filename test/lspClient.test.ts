@@ -22,6 +22,15 @@ jest.mock('../src/extension', () => ({
     }))
 }));
 
+jest.mock('fs', () => ({
+    ...jest.requireActual('fs'),
+    promises: {
+        access: jest.fn().mockResolvedValue(undefined),
+        mkdir: jest.fn().mockResolvedValue(undefined),
+        chmod: jest.fn().mockResolvedValue(undefined)
+    }
+}));
+
 jest.mock('vscode', () => ({
     workspace: {
         workspaceFolders: [{ uri: { fsPath: '/test/workspace' }, name: 'test-workspace', index: 0 }],
@@ -31,11 +40,15 @@ jest.mock('vscode', () => ({
             onDidChange: jest.fn(),
             onDidDelete: jest.fn(),
             dispose: jest.fn()
+        })),
+        getConfiguration: jest.fn(() => ({
+            get: jest.fn()
         }))
     },
     window: { showErrorMessage: jest.fn() },
     Uri: {
-        parse: jest.fn((uri: string) => ({ fsPath: uri.replace('file://', '') }))
+        parse: jest.fn((uri: string) => ({ fsPath: uri.replace('file://', '') })),
+        joinPath: jest.fn((...args: any[]) => ({ fsPath: args.join('/') }))
     },
     ThemeColor: jest.fn()
 }), { virtual: true });
@@ -46,7 +59,8 @@ const mockContext = {
     subscriptions: [],
     globalState: { get: jest.fn(), update: jest.fn() },
     extensionPath: '/test/extension',
-    extensionUri: { fsPath: '/test/extension' }
+    extensionUri: { fsPath: '/test/extension' },
+    globalStorageUri: { fsPath: '/test/global-storage' }
 } as any;
 
 const mockOutputChannel = { appendLine: jest.fn(), show: jest.fn(), dispose: jest.fn() } as any;
