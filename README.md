@@ -11,12 +11,12 @@ Comprehensive security analysis for Solidity smart contracts with multi-scanner 
 
 ### From Marketplace
 
-Install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=tameshi.tameshi-vscode) or search for "Tameshi Security Scanner" in VS Code Extensions.
+Install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=GianlucaBrigandi.tameshi-vscode) or search for "Tameshi Security Scanner" in VS Code Extensions.
 
 ### From VSIX
 
 ```bash
-code --install-extension tameshi-vscode-0.1.0.vsix
+code --install-extension GianlucaBrigandi.tameshi-vscode-0.1.0.vsix
 ```
 
 ### LSP Server Setup

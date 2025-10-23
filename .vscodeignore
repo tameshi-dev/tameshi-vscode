@@ -1,65 +1,34 @@
-# Source files (exclude TypeScript sources)
+.vscode/**
 src/**
+.gitignore
+.git/**
+.github/**
+node_modules/**
+out/**
+!out/src/extension.js
 test/**
 test-workspace/**
 .vscode-test/**
-
-# Compiled output (exclude all except webpack bundle)
-out/**
-!out/src/extension.js
-!out/src/extension.js.map
-
-# Build configuration (not needed in packaged extension)
+*.vsix
+*.map
+*.ts
+!*.d.ts
 tsconfig.json
 webpack.config.js
 rollup.config.js
 .eslintrc.json
 .prettierrc
 .editorconfig
-
-# Source maps (optional - exclude to reduce size)
-*.js.map
-
-# Test files
-**/*.test.ts
-**/*.test.js
-**/*.spec.ts
-**/*.spec.js
-
-# Dependencies (bundled by webpack)
-node_modules/**
-
-# Development tools and artifacts
+package-lock.json
+coverage/**
+*.log
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
+.gitattributes
 tameshi-vscode-dev/**
 tameshi-output/**
 under-review/**
 .context/**
-
-# Documentation (keep only user-facing docs)
-*.md
-!README.md
-!CHANGELOG.md
-!LICENSE.md
-
-# Git files
-.git/**
-.github/**
-.gitignore
-.gitattributes
-
-# Build artifacts
-*.vsix
-dist/**
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE files
-.vscode/**
-!.vscode/launch.json
-!.vscode/tasks.json
-
-# Backup files
-**/*.bak
-**/*~
+scripts/**
