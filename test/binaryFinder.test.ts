@@ -1,6 +1,7 @@
 import { BinaryFinder } from '../src/services/binaryFinder';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as path from 'path';
 
 jest.mock('vscode', () => ({
     workspace: {
@@ -100,7 +101,7 @@ describe('BinaryFinder', () => {
             const result = await finder.find();
 
             expect(result).toEqual({
-                path: '/workspace/bin/tameshi-lsp',
+                path: path.join('/workspace', 'bin', 'tameshi-lsp'),
                 source: 'settings'
             });
         });
