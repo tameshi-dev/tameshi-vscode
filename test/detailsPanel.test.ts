@@ -1,6 +1,7 @@
 jest.mock('vscode-languageclient/node', () => ({
-    LanguageClient: class LanguageClient {}
-}));
+    LanguageClient: class LanguageClient {},
+    TransportKind: { stdio: 1, ipc: 2, pipe: 3, socket: 4 }
+}), { virtual: true });
 
 import { DetailsPanel } from '../src/webviews/detailsPanel';
 import { Finding } from '../src/views/findingsView';
