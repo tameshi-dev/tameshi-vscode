@@ -1,0 +1,68 @@
+{
+  "correlated_groups": [
+    {
+      "group_id": "corr-group-001",
+      "primary_finding": "det-001",
+      "correlated_findings": ["llm-001", "det-005", "llm-004"],
+      "correlation_type": "augmentation",
+      "confidence_boost": 0.35,
+      "description": "Reentrancy vulnerability confirmed by multiple scanners"
+    },
+    {
+      "group_id": "corr-group-002",
+      "primary_finding": "det-002",
+      "correlated_findings": ["llm-002"],
+      "correlation_type": "augmentation",
+      "confidence_boost": 0.25,
+      "description": "Access control vulnerability with LLM augmentation"
+    },
+    {
+      "group_id": "corr-group-003",
+      "primary_finding": "det-003",
+      "correlated_findings": ["llm-003"],
+      "correlation_type": "related",
+      "confidence_boost": 0.1,
+      "description": "Unchecked return as part of broader security issues"
+    }
+  ],
+  "correlation_matrix": {
+    "det-001": {
+      "llm-001": 0.95,
+      "det-005": 0.85,
+      "llm-004": 0.98
+    },
+    "det-002": {
+      "llm-002": 0.99
+    },
+    "det-003": {
+      "llm-003": 0.65
+    },
+    "det-004": {
+      "llm-003": 0.45
+    },
+    "det-005": {
+      "det-001": 0.85,
+      "llm-001": 0.80,
+      "llm-004": 0.92
+    }
+  },
+  "merged_findings": [
+    {
+      "id": "merged-001",
+      "original_ids": ["det-001", "llm-001", "det-005", "llm-004"],
+      "title": "Critical Reentrancy Vulnerability (Confirmed by 4 scanners)",
+      "severity": "critical",
+      "confidence": "very_high",
+      "scanner_agreement": "full",
+      "location": {
+        "file": "/test/contracts/VulnerableBank.sol",
+        "line": 15,
+        "column": 9,
+        "end_line": 17,
+        "end_column": 40
+      },
+      "augmented_severity_reasoning": "Elevated from HIGH to CRITICAL based on LLM impact analysis showing complete fund drainage risk",
+      "combined_description": "Reentrancy vulnerability detected by deterministic pattern matching, confirmed by IR analysis, and augmented with exploitation details by LLM analysis. External call at line 15 before state update at line 17 creates exploitable reentrancy condition."
+    }
+  ]
+}

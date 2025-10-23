@@ -1,0 +1,108 @@
+{
+  "findings": [
+    {
+      "id": "det-001",
+      "scanner_id": "source_reentrancy",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Reentrancy vulnerability detected",
+      "description": "External call before state update in withdraw function",
+      "finding_type": "reentrancy",
+      "locations": [{
+        "file": "/test/contracts/VulnerableBank.sol",
+        "line": 15,
+        "column": 9,
+        "end_line": 15,
+        "end_column": 60
+      }],
+      "metadata": {
+        "references": ["SWC-107", "https://swcregistry.io/docs/SWC-107"],
+        "pattern_matched": "call.value()_before_state_change",
+        "detector_version": "1.0.0"
+      }
+    },
+    {
+      "id": "det-002",
+      "scanner_id": "source_access_control",
+      "severity": "critical",
+      "confidence": "high",
+      "title": "Missing access control on critical function",
+      "description": "The setOwner function lacks proper access control modifiers",
+      "finding_type": "access_control",
+      "locations": [{
+        "file": "/test/contracts/PoorAccessControl.sol",
+        "line": 23,
+        "column": 5,
+        "end_line": 25,
+        "end_column": 6
+      }],
+      "metadata": {
+        "references": ["SWC-105"],
+        "missing_modifier": "onlyOwner",
+        "function_visibility": "public"
+      }
+    },
+    {
+      "id": "det-003",
+      "scanner_id": "source_unchecked_returns",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Unchecked return value",
+      "description": "Return value of external call is not checked",
+      "finding_type": "unchecked_return",
+      "locations": [{
+        "file": "/test/contracts/VulnerableBank.sol",
+        "line": 28,
+        "column": 9,
+        "end_line": 28,
+        "end_column": 45
+      }],
+      "metadata": {
+        "references": ["SWC-104"],
+        "call_type": "low_level_call"
+      }
+    },
+    {
+      "id": "det-004",
+      "scanner_id": "source_overflow",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Potential integer overflow",
+      "description": "Addition operation may overflow without SafeMath",
+      "finding_type": "overflow",
+      "locations": [{
+        "file": "/test/contracts/VulnerableToken.sol",
+        "line": 42,
+        "column": 13,
+        "end_line": 42,
+        "end_column": 35
+      }],
+      "metadata": {
+        "references": ["SWC-101"],
+        "operation": "addition",
+        "solidity_version": "0.8.19"
+      }
+    },
+    {
+      "id": "det-005",
+      "scanner_id": "cranelift_ir",
+      "severity": "high",
+      "confidence": "medium",
+      "title": "State mutation after external interaction",
+      "description": "IR analysis detected state change after external call pattern",
+      "finding_type": "reentrancy",
+      "locations": [{
+        "file": "/test/contracts/VulnerableBank.sol",
+        "line": 17,
+        "column": 9,
+        "end_line": 17,
+        "end_column": 40
+      }],
+      "metadata": {
+        "ir_pattern": "CALL -> SSTORE",
+        "basic_block": "bb4",
+        "control_flow_path": ["bb1", "bb2", "bb4"]
+      }
+    }
+  ]
+}

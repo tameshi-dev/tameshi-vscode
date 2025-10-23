@@ -1,0 +1,59 @@
+/* VS Code theme variables */
+:root {
+    --vscode-font-family: var(--vscode-editor-font-family);
+    --vscode-font-weight: var(--vscode-editor-font-weight);
+    --vscode-font-size: var(--vscode-editor-font-size);
+}
+
+body {
+    font-family: var(--vscode-font-family);
+    font-weight: var(--vscode-font-weight);
+    font-size: var(--vscode-font-size);
+    color: var(--vscode-editor-foreground);
+    background-color: var(--vscode-editor-background);
+}
+
+* {
+    color: var(--vscode-editor-foreground);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--vscode-editor-foreground);
+}
+
+a {
+    color: var(--vscode-textLink-foreground);
+}
+
+a:hover,
+a:active {
+    color: var(--vscode-textLink-activeForeground);
+}
+
+button {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    padding: 4px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}
+
+button:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+}
+
+code {
+    color: var(--vscode-textPreformat-foreground);
+    background-color: var(--vscode-textCodeBlock-background);
+}
+
+pre {
+    background-color: var(--vscode-textCodeBlock-background);
+    border: 1px solid var(--vscode-panel-border);
+}

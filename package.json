@@ -1,0 +1,724 @@
+{
+  "name": "tameshi-vscode",
+  "displayName": "Tameshi Security Scanner",
+  "description": "VS Code extension for Tameshi LSP server - Solidity/Yul/EVM security analysis",
+  "version": "0.1.8",
+  "publisher": "tameshi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tameshi-dev/tameshi-vscode"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tameshi-dev/tameshi-vscode/issues"
+  },
+  "homepage": "https://tameshi.dev",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "solidity",
+    "yul",
+    "evm",
+    "security",
+    "analysis",
+    "tameshi"
+  ],
+  "activationEvents": [
+    "onLanguage:solidity",
+    "onLanguage:yul",
+    "onCommand:tameshi.scanWorkspace.client",
+    "onCommand:tameshi.scanFile.client",
+    "onCommand:tameshi.llmScanFile",
+    "onCommand:tameshi.llmScanWorkspace",
+    "onCommand:tameshi.clearFindings",
+    "onCommand:tameshi.openFindingDetails",
+    "onCommand:tameshi.restart",
+    "onView:tameshi.findings",
+    "workspaceContains:**/foundry.toml",
+    "workspaceContains:**/hardhat.config.*"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "solidity",
+        "aliases": [
+          "Solidity",
+          "solidity"
+        ],
+        "extensions": [
+          ".sol"
+        ]
+      },
+      {
+        "id": "yul",
+        "aliases": [
+          "Yul",
+          "yul"
+        ],
+        "extensions": [
+          ".yul"
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "Tameshi",
+      "properties": {
+        "tameshi.server.path": {
+          "scope": "machine",
+          "type": "string",
+          "default": "",
+          "description": "Path to the Tameshi LSP server executable. If empty, uses PATH lookup"
+        },
+        "tameshi.server.args": {
+          "scope": "machine",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional arguments to pass to the Tameshi LSP server"
+        },
+        "tameshi.server.env": {
+          "scope": "machine",
+          "type": "object",
+          "default": {},
+          "description": "Environment variables to set when starting the server"
+        },
+        "tameshi.scan.onSave": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "none",
+            "file",
+            "workspace"
+          ],
+          "default": "file",
+          "description": "When to trigger automatic scans on file save"
+        },
+        "tameshi.scan.onSave.debounce": {
+          "scope": "resource",
+          "type": "number",
+          "default": 1000,
+          "description": "Milliseconds to wait after save before scanning (prevents spam when rapidly saving)"
+        },
+        "tameshi.scan.ai.smartRescan": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "off",
+            "file",
+            "batch"
+          ],
+          "default": "batch",
+          "enumDescriptions": [
+            "Disabled: never auto-rescan AI findings",
+            "File: rescan immediately when AI finding line modified",
+            "Batch: wait and batch multiple affected files (cost-optimized)"
+          ],
+          "description": "Automatically rescan files with AI when lines containing AI findings are modified"
+        },
+        "tameshi.scan.ai.smartRescan.debounce": {
+          "scope": "resource",
+          "type": "number",
+          "default": 3000,
+          "description": "Milliseconds to wait after save before AI rescan (prevents spam, allows batching)"
+        },
+        "tameshi.scan.ai.smartRescan.contextLines": {
+          "scope": "resource",
+          "type": "number",
+          "default": 2,
+          "description": "Number of lines above/below AI finding to check for modifications (context window)"
+        },
+        "tameshi.scan.ai.smartRescan.batchThreshold": {
+          "scope": "resource",
+          "type": "number",
+          "default": 5,
+          "description": "Minimum number of affected files before triggering workspace AI scan instead of individual file scans"
+        },
+        "tameshi.scan.ai.smartRescan.minSeverity": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "info",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "default": "info",
+          "description": "Only trigger AI rescan for findings at or above this severity level"
+        },
+        "tameshi.scan.onIdle.enabled": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic workspace scanning when user is idle"
+        },
+        "tameshi.scan.onIdle.idleSeconds": {
+          "scope": "resource",
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "maximum": 300,
+          "description": "Seconds of inactivity before triggering workspace scan"
+        },
+        "tameshi.scan.onWorkspaceOpen.enabled": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Scan workspace on startup if previous scan is stale"
+        },
+        "tameshi.scan.onWorkspaceOpen.staleThresholdHours": {
+          "scope": "resource",
+          "type": "number",
+          "default": 8,
+          "minimum": 1,
+          "maximum": 72,
+          "description": "Hours before workspace scan is considered stale"
+        },
+        "tameshi.scan.git.enabled": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Enable automatic scanning on Git events (pull, checkout, merge)"
+        },
+        "tameshi.scan.git.scanChangedOnly": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Only scan files changed by Git operation (vs full workspace scan)"
+        },
+        "tameshi.scan.include": {
+          "scope": "resource",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.sol",
+            "**/*.yul"
+          ],
+          "description": "Glob patterns for files to include in scans"
+        },
+        "tameshi.scan.exclude": {
+          "scope": "resource",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/node_modules/**",
+            "**/lib/**",
+            "**/out/**"
+          ],
+          "description": "Glob patterns for files to exclude from scans"
+        },
+        "tameshi.rules": {
+          "scope": "resource",
+          "type": "object",
+          "default": {},
+          "description": "Per-rule configuration (enable/disable, severity overrides) - forwarded to LSP server"
+        },
+        "tameshi.limits": {
+          "scope": "resource",
+          "type": "object",
+          "properties": {
+            "concurrency": {
+              "type": "number",
+              "default": 4
+            },
+            "timeout": {
+              "type": "number",
+              "default": 60000
+            },
+            "memory": {
+              "type": "number",
+              "default": 512
+            }
+          },
+          "default": {},
+          "description": "Analysis limits (concurrency, timeouts, memory caps)"
+        },
+        "tameshi.adapter": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "cli",
+            "daemon"
+          ],
+          "default": "cli",
+          "description": "Adapter mode for the LSP server"
+        },
+        "tameshi.cli.path": {
+          "scope": "machine",
+          "type": "string",
+          "default": "",
+          "description": "Path to the Tameshi CLI when using CLI adapter"
+        },
+        "tameshi.findings.view.groupBy": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "severity",
+            "file",
+            "rule"
+          ],
+          "default": "severity",
+          "description": "How to group findings in the tree view"
+        },
+        "tameshi.docs.baseUrl": {
+          "scope": "window",
+          "type": "string",
+          "default": "https://docs.tameshi.dev",
+          "description": "Base URL for documentation links"
+        },
+        "tameshi.logging.level": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "default": "info",
+          "description": "Logging level for the extension output channel"
+        },
+        "tameshi.findings.mergeMode": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "raw",
+            "merged"
+          ],
+          "default": "raw",
+          "description": "Display mode for findings: 'raw' shows all findings from all scanners, 'merged' combines duplicate findings"
+        },
+        "tameshi.findings.minCorrelationScore": {
+          "scope": "window",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "Minimum correlation score (0.0-1.0) to consider findings as related"
+        },
+        "tameshi.findings.minAugmentationConfidence": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "default": "medium",
+          "description": "Minimum confidence level required for LLM augmentation data to be applied"
+        },
+        "tameshi.llm.enabled": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Enable LLM-based security analysis"
+        },
+        "tameshi.llm.provider": {
+          "scope": "resource",
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "local"
+          ],
+          "default": "openai",
+          "description": "LLM provider to use for analysis"
+        },
+        "tameshi.llm.apiKey": {
+          "scope": "machine-overridable",
+          "type": "string",
+          "default": "",
+          "description": "API key for the LLM provider (stored securely per-machine)"
+        },
+        "tameshi.llm.model": {
+          "scope": "resource",
+          "type": "string",
+          "default": "gpt-4",
+          "description": "Model to use for LLM analysis (e.g., gpt-4, gpt-3.5-turbo, claude-3-opus)"
+        },
+        "tameshi.llm.temperature": {
+          "scope": "resource",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0.2,
+          "description": "Temperature for LLM responses (0.0 = deterministic, 2.0 = creative)"
+        },
+        "tameshi.llm.maxTokens": {
+          "scope": "resource",
+          "type": "number",
+          "minimum": 100,
+          "maximum": 32000,
+          "default": 4000,
+          "description": "Maximum tokens for LLM responses"
+        },
+        "tameshi.llm.confidenceThreshold": {
+          "scope": "resource",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "description": "Minimum confidence threshold (0.0-1.0) for LLM findings"
+        },
+        "tameshi.llm.enabledScanners": {
+          "scope": "resource",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "reentrancy",
+            "access_control",
+            "unchecked_returns"
+          ],
+          "description": "List of enabled LLM scanners"
+        },
+        "tameshi.llm.timeoutSeconds": {
+          "scope": "resource",
+          "type": "number",
+          "minimum": 30,
+          "maximum": 600,
+          "default": 120,
+          "description": "Timeout for LLM scan operations in seconds"
+        },
+        "tameshi.llm.includeLowSeverity": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Include low severity findings from LLM scanners"
+        },
+        "tameshi.llm.useIrScanning": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Use IR-based scanning (ThalIR) instead of raw Solidity code (default: false)"
+        },
+        "tameshi.findings.severityUpgradePolicy": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "llm_high_conf_only",
+            "any_llm",
+            "multi_scanner"
+          ],
+          "default": "llm_high_conf_only",
+          "description": "When to allow severity upgrades: 'off' (never), 'llm_high_conf_only' (only high-confidence LLM), 'any_llm' (any LLM), 'multi_scanner' (multiple scanners agree)"
+        },
+        "tameshi.details.prefetchLimit": {
+          "scope": "window",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 10,
+          "description": "Number of finding details to prefetch in the background (0 to disable prefetching)"
+        },
+        "tameshi.details.cacheTimeout": {
+          "scope": "window",
+          "type": "number",
+          "minimum": 0,
+          "default": 600000,
+          "description": "Time in milliseconds before cached finding details expire (default: 10 minutes)"
+        },
+        "tameshi.editor.hovers.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show rich hovers with finding details when hovering over code"
+        },
+        "tameshi.editor.hovers.showAllScanners": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show details from all scanners in hover"
+        },
+        "tameshi.editor.hovers.showCorrelationCount": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show number of correlated findings in hover"
+        },
+        "tameshi.editor.hovers.showQuickActions": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show quick action buttons in hover"
+        },
+        "tameshi.editor.gutterIcons.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show gutter icons for findings in the editor"
+        },
+        "tameshi.editor.gutterIcons.showCorrelationBadge": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show correlation count badge on gutter icons"
+        },
+        "tameshi.editor.codeLens.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show CodeLens above functions with findings"
+        },
+        "tameshi.editor.codeLens.showFileSummary": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show file-level summary CodeLens at top of file"
+        },
+        "tameshi.editor.codeLens.showFunctionSummary": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show function-level summary CodeLens"
+        },
+        "tameshi.editor.codeLens.minSeverity": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "info"
+          ],
+          "default": "medium",
+          "description": "Minimum severity to show in CodeLens"
+        },
+        "tameshi.editor.statusBar.enabled": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show status bar item with finding summary"
+        },
+        "tameshi.editor.statusBar.showCounts": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show finding counts in status bar"
+        },
+        "tameshi.editor.statusBar.showFixable": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Show count of auto-fixable findings in status bar"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "tameshi.scanWorkspace.client",
+        "title": "Scan Workspace",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.scanFile.client",
+        "title": "Scan Current File",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.refreshResults",
+        "title": "Refresh Security Findings",
+        "category": "Tameshi",
+        "enablement": "false"
+      },
+      {
+        "command": "tameshi.openFindingDetails",
+        "title": "Open Finding Details",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.restart",
+        "title": "Restart Language Server",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.clearFindings",
+        "title": "Clear Findings",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.llmScanFile",
+        "title": "Run LLM Scan on Current File",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.llmScanWorkspace",
+        "title": "Run LLM Scan on Workspace",
+        "category": "Tameshi"
+      },
+      {
+        "command": "tameshi.exportReport.sarif",
+        "title": "Export SARIF Report to Workspace",
+        "category": "Tameshi",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "workbench.view.extension.tameshi",
+        "title": "Show Tameshi",
+        "category": "View"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "explorerResourceIsFolder",
+          "command": "tameshi.scanWorkspace.client",
+          "group": "tameshi@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "resourceExtname == .sol || resourceExtname == .yul",
+          "command": "tameshi.scanFile.client",
+          "group": "tameshi@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "tameshi.scanWorkspace.client",
+          "when": "view == tameshi.findings",
+          "group": "navigation@2"
+        },
+        {
+          "command": "tameshi.clearFindings",
+          "when": "view == tameshi.findings",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "tameshi.exportReport.sarif",
+          "when": "view == tameshi.findings && viewItem == rootGroup",
+          "group": "inline@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "tameshi.scanWorkspace.client"
+        },
+        {
+          "command": "tameshi.scanFile.client"
+        },
+        {
+          "command": "tameshi.refreshResults"
+        },
+        {
+          "command": "tameshi.openFindingDetails"
+        },
+        {
+          "command": "tameshi.restart"
+        },
+        {
+          "command": "tameshi.clearFindings"
+        }
+      ]
+    },
+    "views": {
+      "tameshi": [
+        {
+          "id": "tameshi.findings",
+          "name": "Vulnerability Triage",
+          "when": "tameshi.hasFindings || tameshi.isActive"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tameshi",
+          "title": "Tameshi",
+          "icon": "$(shield)"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "node node_modules/typescript/lib/tsc.js -p ./",
+    "watch": "node node_modules/typescript/lib/tsc.js -watch -p ./",
+    "typecheck": "node node_modules/typescript/lib/tsc.js --noEmit",
+    "clean": "rm -rf out dist *.vsix",
+    "rebuild": "npm run clean && npm install && npm run compile && npm run package",
+    "dev": "npm run compile && npm run watch",
+    "package": "webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch",
+    "test": "npm run test:unit && npm run test:jest",
+    "test:unit": "node ./out/test/runTest.js",
+    "test:jest": "jest",
+    "test:jest-watch": "jest --watch",
+    "test:e2e": "npm run compile && node ./out/test/e2e/runE2ETests.js",
+    "test:e2e-lsp": "npm run compile && mocha ./out/test/e2e/lsp-server.test.js --timeout 30000",
+    "test:all": "npm run test:jest && npm run test:unit && npm run test:e2e",
+    "pretest": "npm run compile && npm run package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/jest": "^29.5.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.8",
+    "glob": "^8.1.0",
+    "jest": "^29.5.0",
+    "mocha": "^10.2.0",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "ws": "^8.18.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/setup.ts"
+    ],
+    "testMatch": [
+      "<rootDir>/test/**/*.test.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/out/",
+      "/test/suite/",
+      "/test/e2e/lsp-server.test.ts",
+      "/test/e2e/extension-integration.test.ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  }
+}
