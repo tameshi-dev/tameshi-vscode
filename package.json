@@ -2,7 +2,7 @@
   "name": "tameshi-vscode",
   "displayName": "Tameshi Security Scanner",
   "description": "VS Code extension for Tameshi LSP server - Solidity security analysis",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "publisher": "GianlucaBrigandi",
   "repository": {
     "type": "git",
