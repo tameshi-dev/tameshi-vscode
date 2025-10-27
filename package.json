@@ -18,8 +18,8 @@
     "vscode": "^1.85.0"
   },
   "galleryBanner": {
-    "color": "#B91C1C",
-    "theme": "dark"
+    "color": "#ffffff",
+    "theme": "light"
   },
   "categories": [
     "Linters",
