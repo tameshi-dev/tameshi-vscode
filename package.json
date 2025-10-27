@@ -206,7 +206,8 @@
           "default": [
             "**/node_modules/**",
             "**/lib/**",
-            "**/out/**"
+            "**/out/**",
+            "**/test/**"
           ],
           "description": "Glob patterns for files to exclude from scans"
         },

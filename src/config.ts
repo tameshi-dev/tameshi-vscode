@@ -156,7 +156,7 @@ export class ConfigManager {
                 onSave: config.get<'none' | 'file' | 'workspace'>('scan.onSave', 'file'),
                 onSaveMode: config.get<'off' | 'deterministic' | 'ai' | 'smart'>('scan.onSaveMode', 'smart'),
                 include: config.get<string[]>('scan.include', ['**/*.sol', '**/*.yul']),
-                exclude: config.get<string[]>('scan.exclude', ['**/node_modules/**', '**/lib/**', '**/out/**']),
+                exclude: config.get<string[]>('scan.exclude', ['**/node_modules/**', '**/lib/**', '**/out/**', '**/test/**']),
                 ai: {
                     smartRescan: config.get<'off' | 'file' | 'batch'>('scan.ai.smartRescan', 'batch'),
                     smartRescanDebounce: config.get<number>('scan.ai.smartRescan.debounce', 3000),
