@@ -72,6 +72,17 @@ export class LSPClient {
         this.outputChannel.appendLine(`Starting Tameshi LSP server from: ${serverPath}`);
 
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+
+        const serverEnv = {
+            ...process.env,
+            ...config.server.env
+        };
+
+        if (config.llm.enabled && config.llm.apiKey && !serverEnv.OPENAI_API_KEY) {
+            serverEnv.OPENAI_API_KEY = config.llm.apiKey;
+            this.outputChannel.appendLine(`[CLIENT] Added OPENAI_API_KEY to server environment from llm.apiKey setting`);
+        }
+
         const serverOptions: ServerOptions = {
             run: {
                 command: serverPath,
@@ -80,8 +91,7 @@ export class LSPClient {
                 options: {
                     cwd: workspaceFolder,
                     env: {
-                        ...process.env,
-                        ...config.server.env,
+                        ...serverEnv,
                         RUST_LOG: 'debug'
                     }
                 }
@@ -93,8 +103,7 @@ export class LSPClient {
                 options: {
                     cwd: workspaceFolder,
                     env: {
-                        ...process.env,
-                        ...config.server.env,
+                        ...serverEnv,
                         TAMESHI_LOG_LEVEL: 'debug'
                     }
                 }
