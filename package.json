@@ -62,7 +62,7 @@
       "title": "Tameshi",
       "properties": {
         "tameshi.server.path": {
-          "scope": "machine",
+          "scope": "machine-overridable",
           "type": "string",
           "default": "",
           "description": "Path to the Tameshi LSP server executable. If empty, uses PATH lookup"

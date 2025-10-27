@@ -56,16 +56,22 @@ export class BinaryFinder {
     }
 
     private resolvePath(inputPath: string): string {
-        if (path.isAbsolute(inputPath)) {
-            return inputPath;
-        }
-
+        let resolvedPath = inputPath;
         const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-        if (workspaceFolder) {
-            return path.join(workspaceFolder.uri.fsPath, inputPath);
+
+        if (workspaceFolder && resolvedPath.includes('${workspaceFolder}')) {
+            resolvedPath = resolvedPath.replace(/\$\{workspaceFolder\}/g, workspaceFolder.uri.fsPath);
         }
 
-        return inputPath;
+        if (path.isAbsolute(resolvedPath)) {
+            return resolvedPath;
+        }
+
+        if (workspaceFolder) {
+            return path.join(workspaceFolder.uri.fsPath, resolvedPath);
+        }
+
+        return resolvedPath;
     }
 
     private async fileExists(filePath: string): Promise<boolean> {
