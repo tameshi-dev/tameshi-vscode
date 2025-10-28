@@ -71,10 +71,7 @@ export class Downloader {
             return null;
         }
 
-        const selectedRelease = await this.promptVersionSelection(releases);
-        if (!selectedRelease) {
-            return null;
-        }
+        const selectedRelease = releases[0];
 
         const asset = selectedRelease.assets.find(
             a => a.name === CONSTANTS.platformSpecificAssetName
@@ -160,20 +157,6 @@ export class Downloader {
                 resolve([]);
             });
         });
-    }
-
-    private async promptVersionSelection(releases: GitHubRelease[]): Promise<GitHubRelease | undefined> {
-        const items = releases.slice(0, 5).map((release, index) => ({
-            label: release.tag_name,
-            description: index === 0 ? 'Latest' : release.name || '',
-            release: release
-        }));
-
-        const selected = await vscode.window.showQuickPick(items, {
-            placeHolder: 'Select Tameshi LSP version to download'
-        });
-
-        return selected?.release;
     }
 
     private async downloadFromUrl(url: string): Promise<string | null> {
