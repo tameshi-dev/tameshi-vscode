@@ -162,25 +162,53 @@ describe('Downloader', () => {
             });
         });
 
-        test('should prompt for version selection with correct options', async () => {
-            mockShowQuickPick.mockResolvedValue(undefined);
+        test('should automatically select latest version without prompting', async () => {
+            const mockFile: any = {
+                close: jest.fn(),
+                on: jest.fn((event: string, handler: Function): any => {
+                    if (event === 'finish') {
+                        setTimeout(() => handler(), 0);
+                    }
+                    return mockFile;
+                })
+            };
+            const mockCreateWriteStream = require('fs').createWriteStream;
+            mockCreateWriteStream.mockReturnValue(mockFile);
 
-            await downloader.downloadLatestBinary();
+            const mockDownloadResponse = new EventEmitter() as any;
+            mockDownloadResponse.statusCode = 200;
+            mockDownloadResponse.pipe = jest.fn().mockReturnValue(mockFile);
 
-            expect(mockShowQuickPick).toHaveBeenCalledWith(
-                expect.arrayContaining([
-                    expect.objectContaining({ label: 'v0.2.0', description: 'Latest' }),
-                    expect.objectContaining({ label: 'v0.1.0' })
-                ]),
-                expect.any(Object)
+            mockWithProgress.mockImplementation(async (options: any, task: Function) => {
+                const originalHttpsGet = mockHttpsGet.getMockImplementation();
+                mockHttpsGet.mockImplementation((url: any, options: any, callback: Function) => {
+                    if (typeof options === 'function') {
+                        return originalHttpsGet?.(url, options);
+                    }
+                    callback(mockDownloadResponse);
+                    return new EventEmitter();
+                });
+                return await task({ report: jest.fn() });
+            });
+
+            const result = await downloader.downloadLatestBinary();
+
+            expect(mockShowQuickPick).not.toHaveBeenCalled();
+            expect(mockWithProgress).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: expect.stringContaining('v0.2.0')
+                }),
+                expect.any(Function)
             );
         });
 
         test('should show error if platform asset not found', async () => {
-            mockShowQuickPick.mockResolvedValue({
-                label: 'v0.2.0',
-                release: {
+            const releasesWithWrongAsset = [
+                {
                     tag_name: 'v0.2.0',
+                    name: 'Release 0.2.0',
+                    draft: false,
+                    prerelease: false,
                     assets: [
                         {
                             name: 'wrong-binary-name',
@@ -188,6 +216,18 @@ describe('Downloader', () => {
                         }
                     ]
                 }
+            ];
+
+            const mockResponse = new EventEmitter() as any;
+            mockResponse.statusCode = 200;
+            mockHttpsGet.mockClear();
+            mockHttpsGet.mockImplementation((url: any, callback: Function) => {
+                callback(mockResponse);
+                setTimeout(() => {
+                    mockResponse.emit('data', JSON.stringify(releasesWithWrongAsset));
+                    mockResponse.emit('end');
+                }, 0);
+                return new EventEmitter();
             });
 
             const result = await downloader.downloadLatestBinary();
@@ -198,13 +238,6 @@ describe('Downloader', () => {
             expect(result).toBeNull();
         });
 
-        test('should return null when user cancels version selection', async () => {
-            mockShowQuickPick.mockResolvedValue(undefined);
-
-            const result = await downloader.downloadLatestBinary();
-
-            expect(result).toBeNull();
-        });
     });
 
     describe('input validation', () => {

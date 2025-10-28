@@ -85,7 +85,8 @@ describe('LSPClient', () => {
         mockLanguageClient.sendRequest.mockClear().mockResolvedValue({ success: true });
 
         mockGetConfiguration.mockReturnValue({
-            server: { path: '/usr/local/bin/tameshi-lsp', args: [], env: {} }
+            server: { path: '/usr/local/bin/tameshi-lsp', args: [], env: {} },
+            llm: { enabled: false, apiKey: '', model: 'gpt-4', provider: 'openai' }
         });
 
         mockGetInitializationOptions.mockReturnValue({
