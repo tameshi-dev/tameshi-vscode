@@ -35,6 +35,23 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          xvfb \
+          libx11-xcb1 \
+          libxrandr2 \
+          libasound2 \
+          libpangocairo-1.0-0 \
+          libatk1.0-0 \
+          libatk-bridge2.0-0 \
+          libgtk-3-0 \
+          libnss3 \
+          libxss1 \
+          libgbm1
+
     - name: Run tests (Linux)
       id: run-tests
       if: runner.os == 'Linux'
