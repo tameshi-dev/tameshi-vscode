@@ -22,5 +22,22 @@ jobs:
         cache: 'npm'
 
     - run: npm ci
+
+    - name: Install Linux dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          xvfb \
+          libx11-xcb1 \
+          libxrandr2 \
+          libasound2t64 \
+          libpangocairo-1.0-0 \
+          libatk1.0-0 \
+          libatk-bridge2.0-0 \
+          libgtk-3-0 \
+          libnss3 \
+          libxss1 \
+          libgbm1
+
     - run: npm run compile
-    - run: npm test
+    - run: xvfb-run -a npm test
